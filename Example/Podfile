@@ -2,6 +2,7 @@ use_frameworks!
 
 target 'WordFinder_Example' do
   pod 'WordFinder', :path => '../'
+  pod 'Charts'
 
   target 'WordFinder_Tests' do
     inherit! :search_paths
