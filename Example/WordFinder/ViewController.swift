@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import WordFinder
+import Charts
 
 class ViewController: UIViewController {
 
