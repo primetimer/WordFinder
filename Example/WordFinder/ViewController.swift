@@ -25,24 +25,34 @@ class ViewController: UIViewController {
 	
 	let uichart = LineChartView()
 	let model = NgramModel()
+	let showabsolute = false
 
 	private func ShowData() {
-		uichart.chartDescription?.text = "My awesome chart"
+		uichart.chartDescription?.text = "Ngram chart"
+		let alldata = LineChartData()
+		let dhue : CGFloat = 1.0 / CGFloat(model.data.count)
+		var hue : CGFloat = 0.0
 		for d in model.data {
+			let color = UIColor(hue: hue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
+			hue = hue + dhue
 			var lineChartEntry = [ChartDataEntry]()
-			
-			
-			
 			for i in 0..<d.data.count {
-				let value = ChartDataEntry(x: Double(d.data[i].year), y: d.data[i].relative)
+				let yval = showabsolute ? d.data[i].absolue : d.data[i].relative*100.0
+				let value = ChartDataEntry(x: Double(d.data[i].year), y: yval)
 				print(d.data[i],d.data[i].relative)
 				lineChartEntry.append(value)
 			}
 			let line = LineChartDataSet(values: lineChartEntry, label: d.search)
-			let data = LineChartData()
-			data.addDataSet(line)
-			uichart.data = data
+			line.lineWidth = 5.0
+			line.setColor(color)
+			line.drawCirclesEnabled = false
+			alldata.addDataSet(line)
 		}
+		uichart.leftAxis.labelPosition = .insideChart
+		uichart.rightAxis.enabled = false
+		uichart.xAxis.labelPosition = .bottom
+		uichart.xAxis.enabled = true
+		uichart.data = alldata
 	}
 	
 	override func viewDidLoad() {
@@ -50,6 +60,8 @@ class ViewController: UIViewController {
 		view.addSubview(uichart)
 		LayoutUI()
 		model.appendSearch(search: "Hello")
+		model.appendSearch(search: "Hallo")
+		model.appendSearch(search: "Goodbye")
 	}
 	
 	override func viewWillAppear(_ animated: Bool) {

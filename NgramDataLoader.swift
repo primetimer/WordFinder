@@ -11,7 +11,6 @@ import UIKit
 public enum NgramCorpus : Int {
 	case english = 15
 	case german = 20
-	
 }
 
 public struct NgramEntry {
