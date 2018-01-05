@@ -7,11 +7,6 @@
 
 import Foundation
 
-public enum NgramCorpus : Int {
-	case english = 15
-	case german = 20
-
-}
 
 public struct NgramBase {
 	public var year: Int = 0
@@ -20,7 +15,7 @@ public struct NgramBase {
 	public var volumes : Int = 0
 }
 
-class NgramDict {
+public class NgramDict {
 	
 	var corpus : NgramCorpus!
 	var dict : [Int:NgramBase]!
@@ -50,6 +45,21 @@ public class NgramDataBase  {
 	
 	private var corpusdict : [NgramCorpus:NgramDict] = [:]
 	private (set) var urls : [NgramCorpus:String] = [:]
+	
+	public func getDict(corpus : NgramCorpus = .english) -> NgramDict? {
+		if !loaded { return nil }
+		let dict = corpusdict[corpus]
+		return dict
+	}
+	public func getabsValue(year : Int, corpus : NgramCorpus = .english) -> NgramBase? {
+		if !loaded { return nil }
+		if let dict = corpusdict[corpus] {
+			let val = dict.dict[year]
+			return val
+		}
+		return nil
+	}
+	
 	public init() {
 		urls[.english] = "https://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-totalcounts-20120701.txt"
 		urls[.german] = "https://storage.googleapis.com/books/ngrams/books/googlebooks-ger-all-totalcounts-20120701.txt"
@@ -85,7 +95,7 @@ public class NgramDataBase  {
 				if let year = Int(vals[0]), let words = Int(vals[1]), let pages = Int(vals[2]), let vol = Int(vals[3]) {
 					let entry = NgramBase(year: year, words: words, pages: pages, volumes: vol)
 					ans.append(data: entry)
-					print(corpus,entry)
+					//print(corpus,entry)
 				}
 			}
 		}
