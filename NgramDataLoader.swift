@@ -80,10 +80,6 @@ public class NGramLoader {
 	
 	//private let url = "https://books.google.com/ngrams/interactive_chart?content=113100%2C113110&year_start=1960&year_end=2017&corpus=15&smoothing=3"
 	
-	//private var url : String {
-	//get { return ComputeURL(search : "abc") }
-	//}
-	
 	private var base : NgramDataBase!
 	public init() {
 		base = NgramDataBase.shared
@@ -117,14 +113,10 @@ public class NGramLoader {
 	}
 	
 	private func parsecontent(content : String, startIndex : String.Index) -> ([Double],String.Index?) {
-
 		guard let start = content.range(of: "timeseries\": [", options: .literal, range: startIndex..<content.endIndex, locale: nil)
 			else { return ([],nil) }
-	
-		//let trail = content[start.upperBound..<content.endIndex]
 		guard let end = content.range(of: "]", options: .literal, range: start.upperBound..<content.endIndex,locale:nil)
-			else { return ([],nil) }
-		
+			else { return ([],nil) }		
 		let found = content[start.upperBound..<end.lowerBound]
 		let data = found.components(separatedBy: ", ")
 		var dvaldata : [Double] = []

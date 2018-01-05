@@ -42,11 +42,11 @@
 		607FACEB1AFB9204008FA782 /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
 		7C1793AB550463A3B638D41A /* Pods_WordFinder_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WordFinder_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B603987FF662124C8E11772 /* Pods_WordFinder_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WordFinder_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		BF7F84ADF0EF03B5C3DA6DFA /* WordFinder.podspec */ = {isa = PBXFileReference; includeInIndex = 1; name = WordFinder.podspec; path = ../WordFinder.podspec; sourceTree = "<group>"; };
+		BF7F84ADF0EF03B5C3DA6DFA /* WordFinder.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = WordFinder.podspec; path = ../WordFinder.podspec; sourceTree = "<group>"; };
 		CD5AFA0A55BA4DACD879D3BC /* Pods-WordFinder_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WordFinder_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WordFinder_Tests/Pods-WordFinder_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		DFDB6B14913FE6F6149793FA /* Pods-WordFinder_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WordFinder_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-WordFinder_Example/Pods-WordFinder_Example.release.xcconfig"; sourceTree = "<group>"; };
-		FB53D9A6763B8837F398E91F /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; name = README.md; path = ../README.md; sourceTree = "<group>"; };
-		FEDA7524F2B265E29329F866 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
+		FB53D9A6763B8837F398E91F /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		FEDA7524F2B265E29329F866 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -215,6 +215,7 @@
 				TargetAttributes = {
 					607FACCF1AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
+						DevelopmentTeam = DS739J79LU;
 						LastSwiftMigration = 0900;
 					};
 					607FACE41AFB9204008FA782 = {
@@ -519,6 +520,7 @@
 			baseConfigurationReference = 460F9DE906AD2B2266B1BA1B /* Pods-WordFinder_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = DS739J79LU;
 				INFOPLIST_FILE = WordFinder/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
@@ -534,6 +536,7 @@
 			baseConfigurationReference = DFDB6B14913FE6F6149793FA /* Pods-WordFinder_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = DS739J79LU;
 				INFOPLIST_FILE = WordFinder/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
