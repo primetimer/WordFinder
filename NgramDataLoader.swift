@@ -67,6 +67,13 @@ public class NgramData {
 	}
 }
 
+public class NgramDataZero : NgramData {
+	public init(corpus : NgramCorpus = .english, search : String = "")
+	{
+		super.init(corpus: corpus, search : search, data : [])
+	}
+}
+
 
 
 public class NGramLoader {
@@ -91,9 +98,16 @@ public class NGramLoader {
 		let ans = URL(string: url)
 		return ans
 	}
+	
+	private func PrepareSearchString(str: String) -> String {
+		let ans = str.replacingOccurrences(of: " ", with: "+", options: .literal, range: nil)
+		return ans
+	}
 	public func LoadData(search : String, start : Int = 1900 , end : Int = 2017 , corpus : NgramCorpus = .english) -> NgramData? {
-		guard let url = ComputeURL(search: search, start: start, end: end, corpus: corpus) else { return nil }
+		let prepared = PrepareSearchString(str: search)
+		guard let url = ComputeURL(search: prepared, start: start, end: end, corpus: corpus) else { return nil }
 		let ddarr = loadData(url: url)
+		if ddarr.count == 0 { return NgramDataZero(corpus: corpus, search: search) }
 		guard let basedata = NgramDataBase.shared.getDict(corpus: corpus) else { return nil }
 		var index = 0
 		var entrys : [NgramEntry] = []
@@ -115,7 +129,7 @@ public class NGramLoader {
 		guard let start = content.range(of: "timeseries\": [", options: .literal, range: startIndex..<content.endIndex, locale: nil)
 			else { return ([],nil) }
 		guard let end = content.range(of: "]", options: .literal, range: start.upperBound..<content.endIndex,locale:nil)
-			else { return ([],nil) }		
+			else { return ([],nil) }
 		let found = content[start.upperBound..<end.lowerBound]
 		let data = found.components(separatedBy: ", ")
 		var dvaldata : [Double] = []
