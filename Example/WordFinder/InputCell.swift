@@ -10,8 +10,16 @@ import Foundation
 import UIKit
 import WordFinder
 
+class InputField : UITextField {
+	var data : NgramData? = nil
+	func setData(data : NgramData) {
+		self.data = data
+		self.text = data.search
+	}
+}
+
 class InputCell : UITableViewCell  {
-	var uisearch = UITextField()
+	var uisearch = InputField()
 	
 	static let inputcellid = "inputcellid"
 	
@@ -26,10 +34,12 @@ class InputCell : UITableViewCell  {
 	required init?(coder aDecoder: NSCoder) {
 		fatalError("init(coder:) has not been implemented")
 	}
-	
+		
+	/*
 	func SetSearchString(str : String) {
 		uisearch.text = str
 	}
+	*/
 	
 	
 }

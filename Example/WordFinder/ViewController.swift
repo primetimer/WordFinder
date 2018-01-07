@@ -66,16 +66,17 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		if let cell = tv.dequeueReusableCell(withIdentifier: InputCell.inputcellid, for: indexPath) as? InputCell
 		{
 			inputcelltemp = cell
-			searcheditmap[model.data[indexPath.row]] = cell.uisearch
+			//searcheditmap[model.data[indexPath.row]] = cell.uisearch
 			cell.uisearch.delegate = self
-			let searchstr = model.GetSearchString(row: indexPath.row)
-			cell.SetSearchString(str: searchstr)
+			//let searchstr = model.GetSearchString(row: indexPath.row)
+			cell.uisearch.setData(data: model.data[indexPath.row])
+			//cell.SetSearchString(str: searchstr)
 			return cell
 		}
 		return UITableViewCell()
 	}
 	//Map from textfields to row
-	var searcheditmap : [NgramData:UITextField] = [:]
+	//var searcheditmap : [NgramData:UITextField] = [:]
 	private var chartcelltemp : ChartCell? = nil
 	private func GetChartCell(indexPath : IndexPath) -> UITableViewCell {
 		if let cell = tv.dequeueReusableCell(withIdentifier: ChartCell.chartcellid, for: indexPath) as? ChartCell
@@ -129,7 +130,7 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		case inputsection:
 			return GetInputCell(indexPath: indexPath)
 		case chartsection:
-			switch(indexPath.row) {
+			switch(row) {
 			case chartrow:
 				return GetChartCell(indexPath: indexPath)
 			case chartparamrow:
@@ -171,7 +172,7 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		case .delete:
 			model.data.remove(at: indexPath.row)
 		case .insert:
-			model.appendSearch(search: "")
+			_ = model.appendSearch(search: "")
 		case .none:
 			return
 		}
@@ -220,9 +221,8 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 	let model = NgramModel()
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		model.appendSearch(search: "Hello")
-		model.appendSearch(search: "Hallo")
-		model.appendSearch(search: "Goodbye")
+		_ = model.appendSearch(search: "Hello")
+		_ = model.appendSearch(search: "Goodbye")
 		self.view.addSubview(tv)
 		CreateToolBar()
 		setupAutoLayout()
@@ -250,6 +250,7 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 	private var noButton: UIBarButtonItem!
 	private var refreshButton: UIBarButtonItem!
 	private var editButton : UIBarButtonItem!
+	private var doneButton : UIBarButtonItem!
 	
 	private func CreateToolBar() {
 		// make uitoolbar instance
@@ -277,18 +278,19 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		//Navigation Bar
 		navigationItem.title = "Word usage in print media"
 		editButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.edit, target: self, action: #selector(editAction));
+		doneButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.edit, target: self, action: #selector(editAction));
 		navigationItem.setRightBarButton(editButton, animated: false)
 	}
 	
 	@objc func editAction() {
 		tv.isEditing = !tv.isEditing
-		model.clean()
+		model.cleanup()
 		if tv.isEditing {
-			model.appendSearch(search: "")
-			editButton.title = "Done"
+			_ = model.appendSearch(search: "")
+			navigationItem.setRightBarButton(doneButton, animated: false)
 		} else {
-			model.clean()
-			editButton.title = "Edit"
+			model.cleanup()
+			navigationItem.setRightBarButton(editButton, animated: false)
 		}
 		tv.reloadData()
 	}
@@ -303,7 +305,9 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		print("TextField did begin editing method called")
 	}
 	func textFieldDidEndEditing(_ textField: UITextField) {
+		/*
 		var found = false
+		
 		for (index,data) in model.data.enumerated()  {
 			if searcheditmap[data] == textField {
 				model.refreshSearch(search: textField.text!, row: index)
@@ -311,6 +315,13 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 			}
 		}
 		assert(found == true)
+		*/
+		guard let inputfield = textField as? InputField else { assert(false) }
+		guard let data = inputfield.data else { assert(false)  }
+		guard let input = inputfield.text else { assert(false) }
+		if let newdata = model.refeshSearch(search: input, data: data) {
+			inputfield.data = newdata
+		}
 		if chartcelltemp != nil {
 			chartcelltemp?.ShowData(model: model)
 		}

@@ -24,7 +24,7 @@ class NgramModel {
 	private lazy var loader = NGramLoader()
 	var data : [NgramData] = []
 	
-	func clean() {
+	func cleanup() {
 		var n = data.count-1
 		while n > 0 {
 			if data[n].search == "" {
@@ -33,20 +33,33 @@ class NgramModel {
 			n = n - 1
 		}
 		if data.count == 0 {
-			appendSearch(search: "Example")
+			_ = appendSearch(search: "Example")
 		}
 	}
 	
-	func appendSearch(search : String) {
+	func appendSearch(search : String) -> NgramData? {
 		if let loaddata = loader.LoadData(search: search) {
 			data.append(loaddata)
+			return loaddata
 		}
+		return nil
 	}
-	func refreshSearch(search : String, row : Int) {
+	func refreshSearch(search : String, row : Int) -> NgramData? {
 		if let loaddata = loader.LoadData(search: search) {
 			data[row] = loaddata
 		}
+		return data[row]
 	}
+	
+	func refeshSearch(search : String, data : NgramData) -> NgramData? {
+		for i in 0..<self.data.count {
+			if self.data[i] == data {
+				return refreshSearch(search: search, row: i)
+			}
+		}
+		return appendSearch(search: search)
+	}
+
 	func GetSearchString(row : Int) -> String {
 		if row >= data.count { return "" }
 		let ans = data[row].search
