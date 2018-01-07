@@ -66,6 +66,30 @@ public class NgramData : Hashable {
 		get { return _data }
 	}
 	
+	private var smoothing = 1
+	private var _smooth : [NgramEntry] = []
+	
+	public func SmoothValues(smoothing : Int) -> [NgramEntry] {
+		self.smoothing = smoothing
+		_smooth = []
+		if _data.count == 0 { return [] }
+		_smooth.append(data[0])
+		if data.count == 1 { return _smooth }
+		for index in 1..<data.count {
+			let startindex = index - smoothing
+			var (sum,divisor) = (0.0,0.0)
+			for j in max(0,startindex)...index {
+				sum = sum + data[j].relative
+				divisor = divisor + 1.0
+			}
+			let avg = sum / divisor
+			let entry = NgramEntry(corpus: self.corpus, year: data[index].year, val: avg)
+			_smooth.append(entry)
+
+		}
+		return _smooth
+	}
+	
 	init(corpus : NgramCorpus, search : String ,data : [NgramEntry])
 	{
 		self._corpus = corpus
@@ -90,8 +114,7 @@ public class NGramLoader {
 	private var search : String!
 	private var start : Int = 1900
 	private var end : Int = 2017
-	
-	//private let url = "https://books.google.com/ngrams/interactive_chart?content=113100%2C113110&year_start=1960&year_end=2017&corpus=15&smoothing=3"
+	var smoothing = 0
 	
 	private var base : NgramDataBase!
 	public init() {
@@ -101,7 +124,7 @@ public class NGramLoader {
 	private let baseurl = "https://books.google.com/ngrams/interactive_chart?content="
 	private func ComputeURL(search : String,start : Int, end : Int, corpus : NgramCorpus) -> URL? {
 		let corpint = corpus.rawValue
-		let url = baseurl + "\(search)&year_start=\(start)&year_end=\(end)&corpus=\(corpint)&smoothing=3"
+		let url = baseurl + "\(search)&year_start=\(start)&year_end=\(end)&corpus=\(corpint)&smoothing=\(smoothing)"
 		let ans = URL(string: url)
 		return ans
 	}

@@ -10,80 +10,56 @@ import UIKit
 import WordFinder
 import Charts
 
-class NgramModel {
-	private lazy var loader = NGramLoader()
-	var data : [NgramData] = []
-	
-	func clean() {
-		var n = data.count-1
-		while n > 0 {
-			if data[n].search == "" {
-				data.remove(at: n)
-			}
-			n = n - 1
-		}
-		if data.count == 0 {
-			appendSearch(search: "Example")
-		}
-	}
-		
-	func appendSearch(search : String) {
-		if let loaddata = loader.LoadData(search: search) {
-			data.append(loaddata)
-		}
-	}
-	func refreshSearch(search : String, row : Int) {
-		if let loaddata = loader.LoadData(search: search) {
-			data[row] = loaddata
-		}
-	}
-	func GetSearchString(row : Int) -> String {
-		if row >= data.count { return "" }
-		let ans = data[row].search
-		return ans
-	}
-	func move(from : Int, to: Int)
-	{
-		let src = data[from]
-		data.remove(at: from)
-		data.insert(src, at: to)
-	}
-}
+
 
 class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
+	
+	private let inputsection = 0
+	private let chartsection = 1
+	private let chartrow = 0
+	private let chartparamrow = 1
 	
 	func numberOfSections(in tableView: UITableView) -> Int {
 		return 2
 	}
 	
-	func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-		let width = tableView.frame.size.width
-		switch indexPath.section {
-		case 0:
-			return 40.0
-		case 1:
-			return width
-		default:
-			return 40.0
-		}
-	}
-
 	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 		switch section {
-		case 0:
+		case inputsection:
 			return model.data.count
-		case 1:
-			return 1
+		case chartsection:
+			return 2
 		default:
 			assert(false)
 			return 0
 		}
 	}
+
 	
-	private let inputcellid = "inputcellid"
+	func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+		let width = tableView.frame.size.width
+		switch indexPath.section {
+		case inputsection:
+			return 40.0
+		case chartsection:
+			switch indexPath.row {
+			case chartrow:
+				return width
+			case chartparamrow:
+				return 40.0
+			default:
+				assert(false)
+			}
+
+		default:
+			return 40.0
+		}
+	}
+
+	
 	private var inputcelltemp : InputCell? = nil
 	private func GetInputCell(indexPath : IndexPath) -> UITableViewCell {
-		if let cell = tv.dequeueReusableCell(withIdentifier: inputcellid, for: indexPath) as? InputCell
+		if let cell = tv.dequeueReusableCell(withIdentifier: InputCell.inputcellid, for: indexPath) as? InputCell
 		{
 			inputcelltemp = cell
 			searcheditmap[model.data[indexPath.row]] = cell.uisearch
@@ -96,11 +72,9 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 	}
 	//Map from textfields to row
 	var searcheditmap : [NgramData:UITextField] = [:]
-	
-	private let chartcellid = "chartcellid"
 	private var chartcelltemp : ChartCell? = nil
 	private func GetChartCell(indexPath : IndexPath) -> UITableViewCell {
-		if let cell = tv.dequeueReusableCell(withIdentifier: chartcellid, for: indexPath) as? ChartCell
+		if let cell = tv.dequeueReusableCell(withIdentifier: ChartCell.chartcellid, for: indexPath) as? ChartCell
 		{
 			chartcelltemp = cell
 			cell.ShowData(model: model)
@@ -108,12 +82,29 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		}
 		return UITableViewCell()
 	}
+	private var chartcellparamtemp : ChartParamCell? = nil
+	private func GetChartParamCell(indexPath : IndexPath) -> ChartParamCell {
+		if let cell = tv.dequeueReusableCell(withIdentifier: ChartParamCell.chartparamcellid, for: indexPath) as? ChartParamCell
+		{
+			chartcellparamtemp = cell
+			cell.uiabsolute.addTarget(self, action: #selector(absoluteAction), for: .valueChanged)
+			return cell
+		}
+		return ChartParamCell()
+	}
+	@objc func absoluteAction() {
+		if let absolute = chartcellparamtemp?.uiabsolute.isOn {
+			NgramParam.shared.absolute = absolute
+			chartcelltemp?.showabsolute = absolute
+		}
+		chartcelltemp?.ShowData(model: model)
+	}
 	
 	func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
 		switch section {
-		case 0:
+		case inputsection:
 			return "Search Terms"
-		case 1:
+		case chartsection:
 			return "Chart"
 		default:
 			return nil
@@ -124,10 +115,20 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		let row = indexPath.row
 		switch(section)
 		{
-		case 0:
+		case inputsection:
 			return GetInputCell(indexPath: indexPath)
-		case 1:
-			return GetChartCell(indexPath: indexPath)
+		case chartsection:
+			switch(indexPath.row) {
+			case chartrow:
+				return GetChartCell(indexPath: indexPath)
+			case chartparamrow:
+				let cell = GetChartParamCell(indexPath: indexPath)
+				return cell
+			default:
+				assert(false)
+				break
+			}
+			
 		default:
 			assert(false)
 		}
@@ -167,7 +168,7 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 	}
 	
 	func tableView(_ tableView: UITableView, shouldIndentWhileEditingRowAt indexPath: IndexPath) -> Bool {
-		if indexPath.section == 0 {
+		if indexPath.section == inputsection {
 			return true
 		}
 		return false
@@ -176,35 +177,22 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 	func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
 		model.move(from: sourceIndexPath.row, to: destinationIndexPath.row)
 		tv.reloadData()
-		/*
-		let movedObject = self.fruits[sourceIndexPath.row]
-		fruits.remove(at: sourceIndexPath.row)
-		fruits.insert(movedObject, at: destinationIndexPath.row)
-		NSLog("%@", "\(sourceIndexPath.row) => \(destinationIndexPath.row) \(fruits)")
-		self.tableView.reloadData()
-		*/
 	}
 	
 	func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
-		if sourceIndexPath.section != 0 {
+		if sourceIndexPath.section != inputsection {
 			return sourceIndexPath
 		}
-		if proposedDestinationIndexPath.section != 0 {
+		if proposedDestinationIndexPath.section != inputsection {
 			return sourceIndexPath
 		}
 		return proposedDestinationIndexPath
 	}
 	
-	lazy var tv: UITableView = {
-		let tv = UITableView(frame: .zero, style: .plain)
-		tv.translatesAutoresizingMaskIntoConstraints = false
-		tv.backgroundColor = .lightGray
+	lazy var tv: MyTableView = {
+		let tv = MyTableView(frame: .zero, style: .plain)
 		tv.delegate = self
 		tv.dataSource = self
-		tv.register(WordTableViewHeader.self, forHeaderFooterViewReuseIdentifier: WordTableViewHeader.headerId)
-		tv.register(InputCell.self, forCellReuseIdentifier: self.inputcellid)
-		tv.register(ChartCell.self, forCellReuseIdentifier: self.chartcellid)
-		tv.isEditing = false
 		return tv
 	}()
 
@@ -223,7 +211,6 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		tv.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
 		tv.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
 		tv.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-		//tv.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
 		tv.bottomAnchor.constraint(equalTo: myToolbar.topAnchor).isActive = true
 	}
 	

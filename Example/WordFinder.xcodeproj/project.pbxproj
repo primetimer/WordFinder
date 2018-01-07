@@ -7,9 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		54BC554520020DD3000D1B5E /* NgramModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54BC554420020DD3000D1B5E /* NgramModel.swift */; };
 		54CDE3412000010E00C6ECF5 /* NgramTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CDE3402000010E00C6ECF5 /* NgramTableView.swift */; };
 		54CDE343200007C500C6ECF5 /* ChartCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CDE342200007C500C6ECF5 /* ChartCell.swift */; };
 		54CDE345200008E300C6ECF5 /* InputCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CDE344200008E300C6ECF5 /* InputCell.swift */; };
+		54CDE3472001F40200C6ECF5 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CDE3462001F40200C6ECF5 /* Extensions.swift */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		607FACD81AFB9204008FA782 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* ViewController.swift */; };
 		607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 607FACD91AFB9204008FA782 /* Main.storyboard */; };
@@ -33,9 +35,11 @@
 /* Begin PBXFileReference section */
 		2B5DF1353636BAD0D7BCDE5B /* Pods-WordFinder_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WordFinder_Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-WordFinder_Tests/Pods-WordFinder_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		460F9DE906AD2B2266B1BA1B /* Pods-WordFinder_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WordFinder_Example.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WordFinder_Example/Pods-WordFinder_Example.debug.xcconfig"; sourceTree = "<group>"; };
+		54BC554420020DD3000D1B5E /* NgramModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NgramModel.swift; sourceTree = "<group>"; };
 		54CDE3402000010E00C6ECF5 /* NgramTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NgramTableView.swift; sourceTree = "<group>"; };
 		54CDE342200007C500C6ECF5 /* ChartCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartCell.swift; sourceTree = "<group>"; };
 		54CDE344200008E300C6ECF5 /* InputCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputCell.swift; sourceTree = "<group>"; };
+		54CDE3462001F40200C6ECF5 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* WordFinder_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WordFinder_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		607FACD51AFB9204008FA782 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -110,9 +114,11 @@
 			children = (
 				54CDE3402000010E00C6ECF5 /* NgramTableView.swift */,
 				54CDE344200008E300C6ECF5 /* InputCell.swift */,
+				54CDE342200007C500C6ECF5 /* ChartCell.swift */,
+				54CDE3462001F40200C6ECF5 /* Extensions.swift */,
 				607FACD51AFB9204008FA782 /* AppDelegate.swift */,
 				607FACD71AFB9204008FA782 /* ViewController.swift */,
-				54CDE342200007C500C6ECF5 /* ChartCell.swift */,
+				54BC554420020DD3000D1B5E /* NgramModel.swift */,
 				607FACD91AFB9204008FA782 /* Main.storyboard */,
 				607FACDC1AFB9204008FA782 /* Images.xcassets */,
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
@@ -383,7 +389,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				54BC554520020DD3000D1B5E /* NgramModel.swift in Sources */,
 				54CDE345200008E300C6ECF5 /* InputCell.swift in Sources */,
+				54CDE3472001F40200C6ECF5 /* Extensions.swift in Sources */,
 				54CDE343200007C500C6ECF5 /* ChartCell.swift in Sources */,
 				607FACD81AFB9204008FA782 /* ViewController.swift in Sources */,
 				54CDE3412000010E00C6ECF5 /* NgramTableView.swift in Sources */,

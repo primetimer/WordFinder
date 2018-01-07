@@ -13,6 +13,8 @@ import WordFinder
 class InputCell : UITableViewCell  {
 	var uisearch = UITextField()
 	
+	static let inputcellid = "inputcellid"
+	
 	override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
 		super.init(style: style, reuseIdentifier: reuseIdentifier)
 		contentView.addSubview(uisearch)
