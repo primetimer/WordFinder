@@ -13,12 +13,15 @@ import WordFinder
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-
+	var nav : UINavigationController!
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
-		//let ngram = NGramLoader()
-		//ngram.LoadData(search: "abc")
+		
+		let vc = ViewController()
+		nav = UINavigationController(rootViewController: vc)
+		nav.viewControllers = [vc]
+		self.window!.rootViewController = nav
+		self.window?.makeKeyAndVisible()
 		return true
     }
 

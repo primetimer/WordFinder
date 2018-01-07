@@ -43,7 +43,14 @@ public struct NgramEntry {
 	}
 }
 
-public class NgramData {
+public class NgramData : Hashable {
+	public static func ==(lhs: NgramData, rhs: NgramData) -> Bool {
+		return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+	}
+	public var hashValue: Int {
+		return ObjectIdentifier(self).hashValue
+	}
+
 	
 	private var _search : String!
 	private var _corpus : NgramCorpus!

@@ -14,6 +14,19 @@ class NgramModel {
 	private lazy var loader = NGramLoader()
 	var data : [NgramData] = []
 	
+	func clean() {
+		var n = data.count-1
+		while n > 0 {
+			if data[n].search == "" {
+				data.remove(at: n)
+			}
+			n = n - 1
+		}
+		if data.count == 0 {
+			appendSearch(search: "Example")
+		}
+	}
+		
 	func appendSearch(search : String) {
 		if let loaddata = loader.LoadData(search: search) {
 			data.append(loaddata)
@@ -24,11 +37,16 @@ class NgramModel {
 			data[row] = loaddata
 		}
 	}
-		
 	func GetSearchString(row : Int) -> String {
 		if row >= data.count { return "" }
 		let ans = data[row].search
 		return ans
+	}
+	func move(from : Int, to: Int)
+	{
+		let src = data[from]
+		data.remove(at: from)
+		data.insert(src, at: to)
 	}
 }
 
@@ -53,7 +71,7 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 		switch section {
 		case 0:
-			return 3
+			return model.data.count
 		case 1:
 			return 1
 		default:
@@ -68,7 +86,7 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		if let cell = tv.dequeueReusableCell(withIdentifier: inputcellid, for: indexPath) as? InputCell
 		{
 			inputcelltemp = cell
-			searcheditmap[indexPath.row] = cell.uisearch
+			searcheditmap[model.data[indexPath.row]] = cell.uisearch
 			cell.uisearch.delegate = self
 			let searchstr = model.GetSearchString(row: indexPath.row)
 			cell.SetSearchString(str: searchstr)
@@ -77,7 +95,7 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		return UITableViewCell()
 	}
 	//Map from textfields to row
-	var searcheditmap : [Int:UITextField] = [:]
+	var searcheditmap : [NgramData:UITextField] = [:]
 	
 	private let chartcellid = "chartcellid"
 	private var chartcelltemp : ChartCell? = nil
@@ -85,7 +103,7 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		if let cell = tv.dequeueReusableCell(withIdentifier: chartcellid, for: indexPath) as? ChartCell
 		{
 			chartcelltemp = cell
-			chartcelltemp?.ShowData(model: model)
+			cell.ShowData(model: model)
 			return cell
 		}
 		return UITableViewCell()
@@ -121,6 +139,62 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		return header
 	}
 	
+	func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+		if indexPath.section == 0 && indexPath.row < model.data.count - 1 {
+			return true
+		}
+		return false
+	}
+	func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
+		if indexPath.section == 0 {
+			if model.data[indexPath.row].search == "" {
+				return .insert
+			}
+			return .delete
+		}
+		return .none
+	}
+	func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+		switch editingStyle {
+		case .delete:
+			model.data.remove(at: indexPath.row)
+		case .insert:
+			model.appendSearch(search: "")
+		case .none:
+			return
+		}
+		tv.reloadData()
+	}
+	
+	func tableView(_ tableView: UITableView, shouldIndentWhileEditingRowAt indexPath: IndexPath) -> Bool {
+		if indexPath.section == 0 {
+			return true
+		}
+		return false
+	}
+	
+	func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+		model.move(from: sourceIndexPath.row, to: destinationIndexPath.row)
+		tv.reloadData()
+		/*
+		let movedObject = self.fruits[sourceIndexPath.row]
+		fruits.remove(at: sourceIndexPath.row)
+		fruits.insert(movedObject, at: destinationIndexPath.row)
+		NSLog("%@", "\(sourceIndexPath.row) => \(destinationIndexPath.row) \(fruits)")
+		self.tableView.reloadData()
+		*/
+	}
+	
+	func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
+		if sourceIndexPath.section != 0 {
+			return sourceIndexPath
+		}
+		if proposedDestinationIndexPath.section != 0 {
+			return sourceIndexPath
+		}
+		return proposedDestinationIndexPath
+	}
+	
 	lazy var tv: UITableView = {
 		let tv = UITableView(frame: .zero, style: .plain)
 		tv.translatesAutoresizingMaskIntoConstraints = false
@@ -130,7 +204,7 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		tv.register(WordTableViewHeader.self, forHeaderFooterViewReuseIdentifier: WordTableViewHeader.headerId)
 		tv.register(InputCell.self, forCellReuseIdentifier: self.inputcellid)
 		tv.register(ChartCell.self, forCellReuseIdentifier: self.chartcellid)
-		
+		tv.isEditing = false
 		return tv
 	}()
 
@@ -143,12 +217,9 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		self.view.addSubview(tv)
 		CreateToolBar()
 		setupAutoLayout()
-		
 	}
 	
 	private func setupAutoLayout() {
-		//let w = view.frame.width
-		//let h = view.frame.height
 		tv.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
 		tv.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
 		tv.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
@@ -159,6 +230,9 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 	override func viewWillAppear(_ animated: Bool) {
 		setupAutoLayout()
 	}
+	override func viewDidAppear(_ animated: Bool) {
+		tv.reloadData()
+	}
 	
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -167,6 +241,8 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 	private var myToolbar: UIToolbar!
 	private var noButton: UIBarButtonItem!
 	private var refreshButton: UIBarButtonItem!
+	private var editButton : UIBarButtonItem!
+	
 	private func CreateToolBar() {
 		// make uitoolbar instance
 		let w = self.view.frame.width
@@ -189,7 +265,26 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		
 		// add the toolbar to the view.
 		self.view.addSubview(myToolbar)
+		
+		//Navigation Bar
+		navigationItem.title = "Word usage in print media"
+		editButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.edit, target: self, action: #selector(editAction));
+		navigationItem.setRightBarButton(editButton, animated: false)
 	}
+	
+	@objc func editAction() {
+		tv.isEditing = !tv.isEditing
+		model.clean()
+		if tv.isEditing {
+			model.appendSearch(search: "")
+			editButton.title = "Done"
+		} else {
+			model.clean()
+			editButton.title = "Edit"
+		}
+		tv.reloadData()
+	}
+	
 	
 	@objc func refreshButtonAction() {
 		let count = model.data.count
@@ -200,9 +295,9 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		print("TextField did begin editing method called")
 	}
 	func textFieldDidEndEditing(_ textField: UITextField) {
-		for i in 0..<100  {
-			if searcheditmap[i] == textField {
-				model.refreshSearch(search: textField.text!, row: i)
+		for (index,data) in model.data.enumerated()  {
+			if searcheditmap[data] == textField {
+				model.refreshSearch(search: textField.text!, row: index)
 			}
 		}
 		if chartcelltemp != nil {
