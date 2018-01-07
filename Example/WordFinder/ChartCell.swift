@@ -10,32 +10,78 @@ import Foundation
 import Charts
 import WordFinder
 
-class ExpandableCell : UITableViewCell {
-	private var _expanded = true
-	
-	var expanded : Bool {
-		set { _expanded = newValue }
-		get { return _expanded }
-	}
-}
-
 class ChartParamCell : UITableViewCell {
+	let x0 : CGFloat = 20.0
+	let y0 : CGFloat = 4.0
+	let dy : CGFloat = 30.0
+	
+	static let shrinkedheight : CGFloat = 30.0
+	static let expandedheight : CGFloat = 4*30.0 + 15.0
+
 	static let chartparamcellid = "chartparamcellid"
-	var uiabsolutelabel = UILabel()
+	private var uiabsolutelabel = UILabel()
+	private var uismoothlabel = UILabel()
+	private var uideltalabel = UILabel()
+	var uititle = UILabel()
 	var uiabsolute = UISwitch()
+	var uismooth = UISegmentedControl(items: ["0","1","2","3","4","5"])
+	var uidelta = UISegmentedControl(items: ["none","delta"])
+	
+	func SetHidden(hidden : Bool) {
+		for s in contentView.subviews {
+			if s != uititle {
+				s.isHidden = hidden
+			}
+		}
+	}
 	
 	override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
 		super.init(style: style, reuseIdentifier: reuseIdentifier)
+		self.accessoryType = .disclosureIndicator
 		
+		contentView.addSubview(uititle)
 		contentView.addSubview(uiabsolute)
 		contentView.addSubview(uiabsolutelabel)
-		let w = self.frame.width - 20.0
-		uiabsolutelabel.frame = CGRect(x: 20.0, y: 4.0, width : w,height: 24.0)
-		uiabsolutelabel.text = "Abolute Values:"
-		uiabsolute.frame = CGRect(x: w-40.0 , y: 0, width: 40.0, height: 24.0)
-		uiabsolute.transform = CGAffineTransform(scaleX: 0.75, y: 0.75);
-		uiabsolute.rightAnchor.constraint(equalTo: self.rightAnchor).isActive = true
-		uiabsolute.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
+		contentView.addSubview(uismooth)
+		contentView.addSubview(uismoothlabel)
+		contentView.addSubview(uidelta)
+		contentView.addSubview(uideltalabel)
+
+		let w = contentView.frame.width
+		do {
+			uititle.text = "Parameters:"
+			uititle.frame = CGRect(x: x0, y: y0, width : w,height: dy)
+		}
+		do {
+			uiabsolutelabel.text = "Abolute Values:"
+			uiabsolutelabel.frame = CGRect(x: x0, y: y0+dy, width : w,height: dy)
+			uiabsolute.transform = CGAffineTransform(scaleX: 0.75, y: 0.75);
+			uiabsolute.isOn = NgramParam.shared.absolute
+			let size = uiabsolute.sizeThatFits(.zero)
+			uiabsolute.frame = CGRect(x: w-size.width-2*x0 , y: y0+dy, width: size.width, height: size.height)
+			
+		}
+		do {
+			uismoothlabel.text = "Smoothing:"
+			uismoothlabel.frame = CGRect(x: x0, y: y0+2*dy, width : w,height: dy)
+			uismooth.transform = CGAffineTransform(scaleX: 0.75, y: 0.75);
+			uismooth.autoresizingMask = .flexibleLeftMargin
+			uismooth.selectedSegmentIndex = NgramParam.shared.smoothing
+			let size = uismooth.sizeThatFits(.zero)
+			let rect = CGRect(x: w - size.width - 2*x0, y: y0 + 2*dy, width: size.width,height :size.height)
+			uismooth.frame = rect
+		}
+		do {
+			uideltalabel.text = "Show:"
+			uideltalabel.frame = CGRect(x: x0, y: y0+3*dy, width : w,height: dy)
+			uidelta.transform = CGAffineTransform(scaleX: 0.75, y: 0.75);
+			uidelta.autoresizingMask = .flexibleLeftMargin
+			uidelta.selectedSegmentIndex = 0
+			let size = uidelta.sizeThatFits(.zero)
+			let rect = CGRect(x: w - size.width - 2*x0, y: y0 + 3*dy, width: size.width,height :size.height)
+			uidelta.frame = rect
+		}
+		SetHidden(hidden: !NgramParam.shared.graphexpanded)
 	}
 	required init?(coder aDecoder: NSCoder) {
 		fatalError("init(coder:) has not been implemented")
@@ -45,7 +91,6 @@ class ChartParamCell : UITableViewCell {
 class ChartCell : UITableViewCell {
 	static let chartcellid = "chartcellid"
 	var uichart = LineChartView()
-	var showabsolute = false
 	
 	override var frame : CGRect {
 		get { return super.frame }
@@ -74,29 +119,41 @@ class ChartCell : UITableViewCell {
 		let dhue : CGFloat = 1.0 / CGFloat(model.data.count)
 		var hue : CGFloat = 0.0
 		for d in model.data {
-			let smooth = d.SmoothValues(smoothing: 5)
+			let smooth = d.SmoothValues(smoothing: NgramParam.shared.smoothing)
+			let delta = d.DeltaValues()
 			let color = UIColor(hue: hue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
 			hue = hue + dhue
+			
 			var lineChartEntry = [ChartDataEntry]()
 			var lineChartSmoothEntry = [ChartDataEntry]()
 			for i in 0..<d.data.count {
-				let yval = showabsolute ? d.data[i].absolue : d.data[i].relative*100.0
+				var yval = 0.0
+				if NgramParam.shared.delta == 1 {
+					yval = delta[i].relative
+				} else
+				{
+					yval = NgramParam.shared.absolute ? d.data[i].absolue : d.data[i].relative*100.0
+				}
 				let value = ChartDataEntry(x: Double(d.data[i].year), y: yval)
 				lineChartEntry.append(value)
-				let ysmooth = smooth[i].relative*100.0
-				let smoothvalue =  ChartDataEntry(x: Double(d.data[i].year), y: ysmooth)
-				lineChartSmoothEntry.append(smoothvalue)
+				
+				if NgramParam.shared.delta ==
+					0 {
+					let ysmooth = smooth[i].relative*100.0
+					let smoothvalue =  ChartDataEntry(x: Double(d.data[i].year), y: ysmooth)
+					lineChartSmoothEntry.append(smoothvalue)
+				}
 			}
 			let line = LineChartDataSet(values: lineChartEntry, label: d.search)
-			let linesmmooth = LineChartDataSet(values: lineChartSmoothEntry, label: "")
+			let linesmmooth = LineChartDataSet(values: lineChartSmoothEntry, label: nil)
 			line.lineWidth = 1.0
 			line.setColor(color)
 			line.drawCirclesEnabled = false
-			
+			line.form = .none
 			linesmmooth.lineWidth = 3.0
 			linesmmooth.setColor(color)
 			linesmmooth.drawCirclesEnabled = false
-			
+
 			alldata.addDataSet(line)
 			alldata.addDataSet(linesmmooth)
 		}

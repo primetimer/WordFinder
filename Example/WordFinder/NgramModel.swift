@@ -13,9 +13,10 @@ import WordFinder
 class NgramParam {
 	static let shared = NgramParam()
 	var absolute : Bool = false
-	
-	private init() {
-		
+	var smoothing : Int = 3
+	var delta : Int = 0
+	var graphexpanded = false
+	private init() {		
 	}
 }
 

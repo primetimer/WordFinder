@@ -22,6 +22,8 @@ class MyTableView : UITableView {
 		self.isEditing = false
 		self.delaysContentTouches = false
 		self.canCancelContentTouches = true
+		self.estimatedRowHeight = 44.0
+		self.rowHeight = UITableViewAutomaticDimension
 	}
 	
 	override func touchesShouldCancel(in view: UIView) -> Bool {

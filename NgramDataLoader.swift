@@ -68,6 +68,7 @@ public class NgramData : Hashable {
 	
 	private var smoothing = 1
 	private var _smooth : [NgramEntry] = []
+	private var _delta : [NgramEntry] = []
 	
 	public func SmoothValues(smoothing : Int) -> [NgramEntry] {
 		self.smoothing = smoothing
@@ -88,6 +89,21 @@ public class NgramData : Hashable {
 
 		}
 		return _smooth
+	}
+	
+	public func DeltaValues() -> [NgramEntry] {
+		_delta = []
+		if data.count == 0 { return _delta }
+		let nullentry = NgramEntry(corpus: self.corpus, year: data[0].year, val: 0)
+		_delta.append(nullentry)
+		if data.count == 1 { return _data }
+	
+		for index in 1..<data.count {
+			let delta = data[index].relative - data[index-1].relative
+			let entry = NgramEntry(corpus: self.corpus, year: data[index].year, val: delta)
+			_delta.append(entry)
+		}
+		return _delta
 	}
 	
 	init(corpus : NgramCorpus, search : String ,data : [NgramEntry])

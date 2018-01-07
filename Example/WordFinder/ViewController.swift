@@ -46,7 +46,11 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 			case chartrow:
 				return width
 			case chartparamrow:
-				return 40.0
+				if NgramParam.shared.graphexpanded {
+						return ChartParamCell.expandedheight
+				}
+				return ChartParamCell.shrinkedheight
+
 			default:
 				assert(false)
 			}
@@ -87,15 +91,22 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		if let cell = tv.dequeueReusableCell(withIdentifier: ChartParamCell.chartparamcellid, for: indexPath) as? ChartParamCell
 		{
 			chartcellparamtemp = cell
-			cell.uiabsolute.addTarget(self, action: #selector(absoluteAction), for: .valueChanged)
+			cell.uiabsolute.addTarget(self, action: #selector(paramAction), for: .valueChanged)
+			cell.uismooth.addTarget(self, action: #selector(paramAction), for: .valueChanged)
+			cell.uidelta.addTarget(self, action: #selector(paramAction), for: .valueChanged)
 			return cell
 		}
 		return ChartParamCell()
 	}
-	@objc func absoluteAction() {
+	@objc func paramAction() {
 		if let absolute = chartcellparamtemp?.uiabsolute.isOn {
 			NgramParam.shared.absolute = absolute
-			chartcelltemp?.showabsolute = absolute
+		}
+		if let delta = chartcellparamtemp?.uidelta.selectedSegmentIndex {
+			NgramParam.shared.delta = delta
+		}
+		if let index = chartcellparamtemp?.uismooth.selectedSegmentIndex {
+			NgramParam.shared.smoothing = index
 		}
 		chartcelltemp?.ShowData(model: model)
 	}
@@ -187,6 +198,16 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 			return sourceIndexPath
 		}
 		return proposedDestinationIndexPath
+	}
+	
+	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+		if let cell = tableView.cellForRow(at: indexPath) as? ChartParamCell {
+			
+			NgramParam.shared.graphexpanded = !NgramParam.shared.graphexpanded
+			cell.SetHidden(hidden: !NgramParam.shared.graphexpanded)
+			tableView.beginUpdates()
+			tableView.endUpdates()
+		}
 	}
 	
 	lazy var tv: MyTableView = {
@@ -282,11 +303,14 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		print("TextField did begin editing method called")
 	}
 	func textFieldDidEndEditing(_ textField: UITextField) {
+		var found = false
 		for (index,data) in model.data.enumerated()  {
 			if searcheditmap[data] == textField {
 				model.refreshSearch(search: textField.text!, row: index)
+				found = true
 			}
 		}
+		assert(found == true)
 		if chartcelltemp != nil {
 			chartcelltemp?.ShowData(model: model)
 		}
