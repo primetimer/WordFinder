@@ -20,11 +20,12 @@ class NgramParam {
 	}
 }
 
-class NgramModel {
+public class NgramModel {
 	private lazy var loader = NGramLoader()
 	var data : [NgramData] = []
 	
 	func cleanup() {
+		/*
 		var n = data.count-1
 		while n > 0 {
 			if data[n].search == "" {
@@ -32,13 +33,14 @@ class NgramModel {
 			}
 			n = n - 1
 		}
+		*/
 		if data.count == 0 {
 			_ = appendSearch(search: "Example")
 		}
 	}
 	
-	func appendSearch(search : String) -> NgramData? {
-		if let loaddata = loader.LoadData(search: search) {
+	func appendSearch(search : String, corpus : NgramCorpus = .english) -> NgramData? {
+		if let loaddata = loader.LoadData(search: search, corpus: corpus) {
 			data.append(loaddata)
 			return loaddata
 		}
@@ -49,15 +51,6 @@ class NgramModel {
 			data[row] = loaddata
 		}
 		return data[row]
-	}
-	
-	func refeshSearch(search : String, data : NgramData) -> NgramData? {
-		for i in 0..<self.data.count {
-			if self.data[i] == data {
-				return refreshSearch(search: search, row: i)
-			}
-		}
-		return appendSearch(search: search)
 	}
 
 	func GetSearchString(row : Int) -> String {

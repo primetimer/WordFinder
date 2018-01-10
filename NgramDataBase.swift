@@ -95,7 +95,6 @@ public class NgramDataBase  {
 				if let year = Int(vals[0]), let words = Int(vals[1]), let pages = Int(vals[2]), let vol = Int(vals[3]) {
 					let entry = NgramBase(year: year, words: words, pages: pages, volumes: vol)
 					ans.append(data: entry)
-					//print(corpus,entry)
 				}
 			}
 		}

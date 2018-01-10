@@ -19,6 +19,8 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 	private let chartrow = 0
 	private let chartparamrow = 1
 	
+	private var inputcells : [InputCell?] = []
+	
 	func numberOfSections(in tableView: UITableView) -> Int {
 		return 2
 	}
@@ -59,13 +61,33 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 			return 40.0
 		}
 	}
-
 	
-	private var inputcelltemp : InputCell? = nil
-	private func GetInputCell(indexPath : IndexPath) -> UITableViewCell {
+	private func ModelCleanup() {
+		model.cleanup()
+		for i in 0..<model.data.count {
+			let indexPath = IndexPath(row: i, section: 0)
+			_ = GetInputCell(indexPath: indexPath) //Sets data for input cells
+		}
+	}
+
+	//private var inputcelltemp : InputCell? = nil
+	private func GetInputCell(indexPath : IndexPath) -> InputCell {
+		let row = indexPath.row
+		if inputcells[row] == nil{
+			inputcells[row] = InputCell()
+		}
+		if let cell = inputcells[row] {
+			cell.uisearch.delegate = self
+			cell.SetData(row: row,data: model.data[row])
+			return cell
+		}
+		assert(false)
+		return InputCell()
+		
+		/*
 		if let cell = tv.dequeueReusableCell(withIdentifier: InputCell.inputcellid, for: indexPath) as? InputCell
 		{
-			inputcelltemp = cell
+			//inputcelltemp = cell
 			//searcheditmap[model.data[indexPath.row]] = cell.uisearch
 			cell.uisearch.delegate = self
 			//let searchstr = model.GetSearchString(row: indexPath.row)
@@ -74,6 +96,7 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 			return cell
 		}
 		return UITableViewCell()
+		*/
 	}
 	//Map from textfields to row
 	//var searcheditmap : [NgramData:UITextField] = [:]
@@ -160,7 +183,7 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 	}
 	func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
 		if indexPath.section == 0 {
-			if model.data[indexPath.row].search == "" {
+			if indexPath.row == model.data.count-1 {
 				return .insert
 			}
 			return .delete
@@ -172,7 +195,12 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		case .delete:
 			model.data.remove(at: indexPath.row)
 		case .insert:
-			_ = model.appendSearch(search: "")
+			if let newsearch = inputcells[indexPath.row]?.uisearch.text {
+				if newsearch != "" {
+					_ = model.refreshSearch(search: newsearch, row: indexPath.row)
+					_ = model.appendSearch(search: "")
+				}
+			}
 		case .none:
 			return
 		}
@@ -188,6 +216,9 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 	
 	func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
 		model.move(from: sourceIndexPath.row, to: destinationIndexPath.row)
+		for i in 0..<model.data.count {
+			inputcells[i]?.SetData(row: i, data: model.data[i])
+		}
 		tv.reloadData()
 	}
 	
@@ -209,6 +240,18 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 			tableView.beginUpdates()
 			tableView.endUpdates()
 		}
+		if let cell = tableView.cellForRow(at: indexPath) as? InputCell {
+			let corpus = model.data[indexPath.row].corpus
+			let cstr = corpus.str
+			cell.uicorpus.isHidden = false
+			cell.uicorpus.setTitle(cstr, for: .normal)
+			cell.uicorpus.setTitle(cstr, for: .selected)
+		}
+	}
+	func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+		if let cell = tableView.cellForRow(at: indexPath) as? InputCell {
+			cell.uicorpus.isHidden = true
+		}
 	}
 	
 	lazy var tv: MyTableView = {
@@ -219,6 +262,7 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 	}()
 
 	let model = NgramModel()
+	let maxcells = 10
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		_ = model.appendSearch(search: "Hello")
@@ -226,8 +270,12 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		self.view.addSubview(tv)
 		CreateToolBar()
 		setupAutoLayout()
+		
+		for _ in 0...maxcells {
+			inputcells.append(nil)
+		}
 	}
-	
+
 	private func setupAutoLayout() {
 		tv.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
 		tv.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
@@ -277,55 +325,51 @@ class ViewController: UIViewController ,  UITableViewDelegate, UITableViewDataSo
 		
 		//Navigation Bar
 		navigationItem.title = "Word usage in print media"
-		editButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.edit, target: self, action: #selector(editAction));
-		doneButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.edit, target: self, action: #selector(editAction));
+		let editButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.edit, target: self, action: #selector(editAction));
 		navigationItem.setRightBarButton(editButton, animated: false)
 	}
 	
 	@objc func editAction() {
 		tv.isEditing = !tv.isEditing
-		model.cleanup()
+		ModelCleanup()
 		if tv.isEditing {
 			_ = model.appendSearch(search: "")
+			tv.reloadData()
+			let row = model.data.count-1
+			let indexpath = IndexPath(row: row, section: 0)
+			let cell = GetInputCell(indexPath: indexpath)
+			cell.uisearch.becomeFirstResponder()
+			let doneButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.done, target: self, action: #selector(editAction));
+			
 			navigationItem.setRightBarButton(doneButton, animated: false)
 		} else {
-			model.cleanup()
+			tv.reloadData()
+			let editButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.edit, target: self, action: #selector(editAction));
 			navigationItem.setRightBarButton(editButton, animated: false)
 		}
-		tv.reloadData()
+		
 	}
-	
 	
 	@objc func refreshButtonAction() {
 		let count = model.data.count
 	}
 	
 	func textFieldDidBeginEditing(_ textField: UITextField) {
-		
+		guard let inputfield = textField as? InputField else { assert(false) }
+		let row = inputfield.row
 		print("TextField did begin editing method called")
+		for c in inputcells {
+			c?.uicorpus.isHidden = true
+		}
+		inputcells[row]?.uicorpus.isHidden = false
 	}
 	func textFieldDidEndEditing(_ textField: UITextField) {
-		/*
-		var found = false
-		
-		for (index,data) in model.data.enumerated()  {
-			if searcheditmap[data] == textField {
-				model.refreshSearch(search: textField.text!, row: index)
-				found = true
-			}
-		}
-		assert(found == true)
-		*/
 		guard let inputfield = textField as? InputField else { assert(false) }
-		guard let data = inputfield.data else { assert(false)  }
-		guard let input = inputfield.text else { assert(false) }
-		if let newdata = model.refeshSearch(search: input, data: data) {
-			inputfield.data = newdata
+		let row = inputfield.row
+		if let search = inputfield.text {
+			_  = model.refreshSearch(search: search, row: row)
 		}
-		if chartcelltemp != nil {
-			chartcelltemp?.ShowData(model: model)
-		}
-		print("TextField did end editing method called")
+		chartcelltemp?.ShowData(model: model)
 	}
 	func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
 		print("TextField should begin editing method called")

@@ -11,6 +11,17 @@ import UIKit
 public enum NgramCorpus : Int {
 	case english = 15
 	case german = 20
+	
+	public var str : String {
+		get {
+			switch self {
+			case .english:
+				return "english"
+			case .german:
+				return "german"
+			}
+		}
+	}
 }
 
 public struct NgramEntry {
@@ -137,7 +148,18 @@ public class NGramLoader {
 		base = NgramDataBase.shared
 	}
 	
+	/*
 	private let baseurl = "https://books.google.com/ngrams/interactive_chart?content="
+	private func ComputeURL(search : String,start : Int, end : Int, corpus : NgramCorpus) -> URL? {
+		let corpint = corpus.rawValue
+		let url = baseurl + "\(search)&year_start=\(start)&year_end=\(end)&corpus=\(corpint)&smoothing=\(smoothing)"
+		let ans = URL(string: url)
+		return ans
+	}
+	*/
+	//private let baseurl = "https://books.google.com/ngrams/graph?content=%28%28Bigfoot+%2B+Sasquatch%29+-+%28Loch+Ness+monster+%2B+Nessie%29%29&year_start=1900&year_end=2000&corpus=15&smoothing=0&share=&direct_url=t1%3B%2C%28%28Bigfoot%20%2B%20Sasquatch%29%20-%20%28Loch%20Ness%20monster%20%2B%20Nessie%29%29%3B%2Cc0"
+	private let baseurl = "https://books.google.com/ngrams/graph?content="
+	
 	private func ComputeURL(search : String,start : Int, end : Int, corpus : NgramCorpus) -> URL? {
 		let corpint = corpus.rawValue
 		let url = baseurl + "\(search)&year_start=\(start)&year_end=\(end)&corpus=\(corpint)&smoothing=\(smoothing)"
@@ -146,9 +168,17 @@ public class NGramLoader {
 	}
 	
 	private func PrepareSearchString(str: String) -> String {
-		let ans = str.replacingOccurrences(of: " ", with: "+", options: .literal, range: nil)
-		return ans
+		//Ersetze blank durch +
+		//ersetze - durch " - " -> "+-+"
+		//vorher ersetze + durch %2B
+		let r0 = str //"((Bigfoot + Sasquatch) - (Loch Ness monster + Nessie))"
+		let r1 = r0.replacingOccurrences(of: "(", with: "%28",options: .literal, range:nil)
+		let r2 = r1.replacingOccurrences(of: ")", with: "%29",options: .literal, range:nil)
+		let r3 = r2.replacingOccurrences(of: "+", with: "%2B",options: .literal, range: nil)
+		let r4 = r3.replacingOccurrences(of: " ", with: "+", options: .literal, range: nil)
+		return r4
 	}
+	
 	public func LoadData(search : String, start : Int = 1900 , end : Int = 2017 , corpus : NgramCorpus = .english) -> NgramData? {
 		let prepared = PrepareSearchString(str: search)
 		guard let url = ComputeURL(search: prepared, start: start, end: end, corpus: corpus) else { return nil }
@@ -161,6 +191,7 @@ public class NGramLoader {
 		{
 			if year < start { continue }
 			if year > end { continue }
+			if index>=ddarr[0].count { break }
 			let data = NgramEntry(corpus: corpus, year: base.year, val: ddarr[0][index])
 			entrys.append(data)
 			index = index + 1
@@ -169,6 +200,14 @@ public class NGramLoader {
 		//Convert it corresponding to missing values
 		let ans = NgramData(corpus: corpus, search: search, data: entrys)
 		return ans
+	}
+	
+	public func LoadContinuations(search : String, start : Int = 1900 , end : Int = 2017 , corpus : NgramCorpus = .english) -> [String] {
+		let prepared = PrepareSearchString(str: search+" *")
+		guard let url = ComputeURL(search: prepared, start: start, end: end, corpus: corpus) else { return [] }
+		
+		let cont = loadContinuations(url: url)
+		return cont
 	}
 	
 	private func parsecontent(content : String, startIndex : String.Index) -> ([Double],String.Index?) {
@@ -186,8 +225,34 @@ public class NGramLoader {
 		return (dvaldata,end.upperBound)
 	}
 	
+	private func loadContinuations(url : URL) -> [String] {
+		var ans : [String] = []
+		do {
+			let content = try String(contentsOf: url)
+			var index : String.Index? = content.startIndex
+			var str : String?
+			while index != nil {
+				(str,index) = parsecontinuatione(content: content, startIndex: index!)
+				if str != nil  {
+					ans.append(str!)
+				}
+			}
+		} catch {
+			print("UUPS")
+			// contents could not be loaded
+		}
+		return ans
+	}
+	private func parsecontinuatione(content : String, startIndex : String.Index) -> (String?,String.Index?) {
 	
-	//private var content = ""
+		guard let start = content.range(of: "ngram\": \"", options: .literal, range: startIndex..<content.endIndex,locale: nil)
+			else { return (nil,nil) }
+		guard let end = content.range(of: "\"",options: .literal, range: start.upperBound..<content.endIndex,locale: nil)
+		else { return (nil,nil) }
+		let subans = content[start.upperBound..<end.lowerBound]
+		let ans = String(subans)
+		return (ans,end.upperBound)
+	}
 	
 	private func loadData(url : URL) -> [[Double]] {
 		var ans : [[Double]] = []

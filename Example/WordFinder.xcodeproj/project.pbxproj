@@ -572,6 +572,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CD5AFA0A55BA4DACD879D3BC /* Pods-WordFinder_Tests.debug.xcconfig */;
 			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
 				DEVELOPMENT_TEAM = DS739J79LU;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
@@ -587,6 +588,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 4.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WordFinder_Example.app/WordFinder_Example";
 			};
 			name = Debug;
 		};
@@ -594,6 +596,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 2B5DF1353636BAD0D7BCDE5B /* Pods-WordFinder_Tests.release.xcconfig */;
 			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
 				DEVELOPMENT_TEAM = DS739J79LU;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SDKROOT)/Developer/Library/Frameworks",
@@ -605,6 +608,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 4.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WordFinder_Example.app/WordFinder_Example";
 			};
 			name = Release;
 		};

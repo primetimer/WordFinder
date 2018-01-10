@@ -16,7 +16,7 @@ class MyTableView : UITableView {
 		self.translatesAutoresizingMaskIntoConstraints = false
 		self.backgroundColor = .lightGray
 		self.register(WordTableViewHeader.self, forHeaderFooterViewReuseIdentifier: WordTableViewHeader.headerId)
-		self.register(InputCell.self, forCellReuseIdentifier: InputCell.inputcellid)
+		//self.register(InputCell.self, forCellReuseIdentifier: InputCell.inputcellid)
 		self.register(ChartCell.self, forCellReuseIdentifier: ChartCell.chartcellid)
 		self.register(ChartParamCell.self, forCellReuseIdentifier: ChartParamCell.chartparamcellid)
 		self.isEditing = false
